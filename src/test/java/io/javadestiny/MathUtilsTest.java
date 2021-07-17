@@ -1,14 +1,16 @@
 package io.javadestiny;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.*;
 
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.EnabledOnOs;
-import org.junit.jupiter.api.condition.OS;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DisplayName("When running MathUtils")
 public class MathUtilsTest {
     MathUtils mathUtils;
+    TestInfo testInfo;
+    TestReporter testReporter;
 
     @BeforeAll
     void beforeAllInit(){
@@ -16,8 +18,11 @@ public class MathUtilsTest {
     }
 
     @BeforeEach
-    void init(){
+    void init(TestInfo testInfo, TestReporter testReporter){
+        this.testInfo = testInfo;
+        this.testReporter = testReporter;
         mathUtils = new MathUtils();
+        testReporter.publishEntry("Running "+testInfo.getDisplayName() + " with tags " + testInfo.getTags());
     }
 
     @AfterEach
@@ -30,12 +35,25 @@ public class MathUtilsTest {
         System.out.println("All Cleared.");
     }
 
-    @Test
-    @DisplayName("Testing add method")
-    void testAdd() {
-        int expected = 2;
-        int actual = mathUtils.add(1,1);
-        assertEquals(expected, actual, "The add method should add two numbers.");
+    @Nested
+    @DisplayName("Add method")
+    @Tag("Math")
+    class AddTest {
+        @Test
+        @DisplayName("Testing add method for positive")
+        void testAddPositive() {
+            int expected = 2;
+            int actual = mathUtils.add(1, 1);
+            assertEquals(expected, actual, "The add method should add two positive numbers.");
+        }
+
+        @Test
+        @DisplayName("Testing add method for negative")
+        void testAddNegative() {
+            int expected = -2;
+            int actual = mathUtils.add(-1, -1);
+            assertEquals(expected, actual, "The add method should add two  negative numbers.");
+        }
     }
 
     @Test
@@ -47,8 +65,11 @@ public class MathUtilsTest {
 
 
     @Test
+    @Tag("Math")
     @DisplayName("Multiply method")
     void testMul(){
+        //System.out.println("Running "+testInfo.getDisplayName() + " with tags " + testInfo.getTags());
+        testReporter.publishEntry("Running "+testInfo.getDisplayName() + " with tags " + testInfo.getTags());
         assertAll(
                 () -> assertEquals(4, mathUtils.mul(2,2),"Should return right product"),
                 () -> assertEquals(0, mathUtils.mul(2,0),"Should return Zero"),
@@ -56,8 +77,13 @@ public class MathUtilsTest {
         );
     }
 
-    @Test
-    void testCircleRadius(){
+    @RepeatedTest(3)
+    @Tag("Circle")
+    void testCircleRadius(RepetitionInfo repetitionInfo){
+        int repetition = repetitionInfo.getCurrentRepetition();
+        if(repetition == 1){
+            System.out.println("First repetition");
+        }
         assertEquals(314.0, mathUtils.computeCircleArea(10),"Should return right circle area.");
     }
 
